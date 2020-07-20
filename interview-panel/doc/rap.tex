@@ -1,0 +1,236 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage{amsmath}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{listings}
+\usepackage{marvosym}
+\usepackage{wasysym}
+\usepackage{marvosym}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{framed}
+\usepackage{tikz-uml}
+\usepackage{alltt}
+\usepackage{mathpartir}
+
+\usetikzlibrary{positioning,shapes,arrows,backgrounds,fit, calc, shadows}
+
+\author{Sujit Kumar Chakrabarti, IIITB }
+\title{Automated Generation of Interview Panels}
+\date{}
+\begin{document}
+\definecolor{lightblue}{rgb}{0.8,0.93,1.0} % color values Red, Green, Blue
+\definecolor{Blue}{rgb}{0,0,1.0} % color values Red, Green, Blue
+\definecolor{Red}{rgb}{1,0,0} % color values Red, Green, Blue
+\definecolor{Purple}{rgb}{0.5,0,0.5}
+\definecolor{Pink}{rgb}{0.7,0,0.2}
+
+\newcommand{\highlight}[1]{{\color{Red}(#1)}}
+\newcommand{\comment}[1]{{\color{Blue}#1}}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{definition}{Definition}
+\newtheorem{example}{Example}
+\newtheorem{myrule}{Rule}
+
+
+\lstset{
+	language = ML,
+	basicstyle = \ttfamily\scriptsize,
+	stringstyle = \ttfamily,
+	keywordstyle=\color{Blue}\bfseries,
+	identifierstyle=\color{Pink},
+	frameround=tttt,
+%	numbers=left
+	showstringspaces=false
+}
+
+\maketitle
+\abstract{
+We present a method for automatically creating interview panels for research interviews at IIITB.
+}
+
+\section{Introduction}
+In IIIT-B there are seven research domains:
+\begin{enumerate}
+\item Computer Science (CS)
+\item Data Science (DS)
+\item Networking, Communication and Signal Processing (NCS)
+\item Software Engineering (SE)
+\item Electronics System Design (ESD)
+\item Information Technology and Society (ITS)
+\item Mathematics and Basic Sciences (MBS)
+\end{enumerate}
+
+The selection process of students in the research programmes involves inviting applications from candidates, shortlisting through application review, written test and interview and final selection. Most of the process is online and is carried out using an indigenously developed web application called Pravesh developed by Prof. Srinivasaraghavan and students.
+
+The applicants have to choose the primary research domain under which they wish to apply. For each (research) domain, there is a \emph{domain representative} (a faculty member listed under the domain) who does an initial screening of all the applications in his/her domain. One of the objectives is to identify desk rejects: applications which are so weak as not to merit further scrutiny. However, the main reason for this step is to refer the applications in his/her domain to appropriate faculty members in that domain based on matching research interest. Each application must be reviewed by at least 3 reviewers. A candidate can get short listed for final interview only if there is at least one faculty member who has reviewed his/her application and has shown his/her interest in supervising the candidate should he/she be finally selected.
+
+We see the following disadvantages of this process:
+\begin{enumerate}
+\item \textbf{Labour Intensive.} Domain representative's initial task is very labour intensive. He/she has to go through all the applications in his/her domain -- which may run into several hundred -- to assign reviewers. This must be done really quickly. Therefore, there are chances of error (applications going to irrelevant reviewers, and/or missing relevant reviewers).
+\item \textbf{Exclusive Domains.} The applicant must choose a single primary domain. Though there is a facility to choose a secondary domain, this is mostly a choice made to the exclusion of all other choices. This is very restrictive. Quite often, the alignment of a candidate's research interests is not well aligned within the boundaries of a domain. There are many candidates whose interests cut across the boundaries of predesignated research domains. In such cases, an application may miss being noticed by a faculty member with matching research interest because of domains not matching. For example, an applicant may be interested in working on applying formal methods for verifying machine learning algorithms. Which domain should he/she apply to -- DS, CS or SE? 
+\end{enumerate}
+
+We believe that we should not force applicants to commit exclusively to one domain. Instead, they should be asked to mention their interests as a set of keywords. The review panel for the application and the panel of interviewers in case the application is short listed should then be composed based on keyword matching between the interests of the candidate and those of pertinent faculty members.
+
+In this article, we present the details of a preliminary experiment we did to test this idea.
+ 
+\section{Basic Idea}
+The basic idea of our approach is simply to match applications with faculty members based on the keywords. Simply put, suppose that the candidate $C$'s application has 3 matching topics with professor $P_1$ and 2 with professor $P_2$. All other things remaining the same, the application should be reviewed by $P_1$ and not $P_2$ if only one of them has to be chosen as the reviewer. This is the basic idea of our approach.
+
+When applying this idea on a real data set, we encounter a number of other challenges:
+\begin{enumerate}
+\item \textbf{Common keywords.} There are a number of keywords which appear in a large number of applications, e.g. Machine Learning, Artificial Intelligence, etc. Applicants mention these not so much because they are interested in these topics, but because these are trending topics of the day.
+\item \textbf{Overloaded faculty members.} For a similar reasons, there are faculty members who would appear in an inordinately large number of review panels, simply because they too are interested in such trending topics as machine learning.
+\end{enumerate}
+
+Therefore, the automated reviewer assignment process must associate less importance to common keywords as compared to rarer keywords. Also, it must have a mechanism to avoid adding faculty members to review panels where they have a match through common keywords.
+
+To formalise the discussion, we define the following:
+\begin{enumerate}
+\item Faculty set $F$.
+\item Topic set $T$.
+\item Application set $A$.
+\item Faculty topic set $FT\ :\ F \mapsto 2^{\{T\}}$.
+\item Application topic set $AT\ :\ A \mapsto 2^{\{T\}}$.
+\item \textbf{Match triples.} For faculty interest and applicant interest, we construct match triples ($F \times T \times A$) which are generated by merging the information available in $FT$ and $AT$.   
+\item \textbf{Faculty score $S_F$.} The number of match triples a faculty member (a.k.a professor) appears in.
+\item \textbf{Topic score $S_T$}. The number of match triples a topic appears in.
+\end{enumerate}
+
+Topic score is indicative of how popular a particular topic is among the applicants. Faculty score is indicative of a faculty's involvement in popular topics. Topics will high $S_T$ are checked by a large number of applicants. If review panels are computed using the code in algorithm~\ref{a:rp}. For every application, a weight is assigned to each matching faculty based on the topics which are in the match. The following formulae are used:
+
+\begin{eqnarray}
+F(a) = faculty(M(a, \_)) \\
+\forall f \in F(a)\ w_T(f, a) = \sum_{t\in M(f, a)} \frac{1}{S_T(t)} \\
+L_f(a) = sort([(f_1, w(f_1, a)), (f_2, w(f_2, a)), ..., (f_2, w(f_2, a))], key=\lambda(a, b). b)
+\end{eqnarray}
+
+The idea is to sort the faculty members with matching interest in such a way that faculty members matching a given application $a$ through rarer topics would be considered first to be there in the panel of the corresponding applicant compared to someone who matches through a more popular keyword. For example, if for two topics, $t_1$ and $t_2$, if $S_T(t_1) > S_T(t_2)$, and two faculty members $f_1$ and $f_2$ are matched with $a$ through $t_1$ and $t_2$, then, with everything else remaining the same, $f_2$ will be given more preference to be in the review panel of $a$ as compared to $f_1$.
+\begin{algorithm}
+\begin{lstlisting}[frame=single]
+def calculate_review_panels(fac_apps):
+  def second(t):
+    _, b = t
+    return b
+
+  faculty_score, application_score, topic_score =
+    calculate_scores(all_fac_apps)
+  review_panels = {}
+  for app in application_score:
+    app_fac_list = []
+    for fac in faculty_score:
+      for f, a, ts in fac_apps:
+        if f == fac and a == app:
+          topic_weight = sum([1.0 / topic_score[t] for t in ts])
+          match_score = topic_weight / faculty_score[fac]
+          app_fac_list.append((fac, match_score))
+
+    app_fac_list.sort(key=second, reverse=True)
+    review_panels[app] = app_fac_list
+  return review_panels
+\end{lstlisting}
+\caption{Algorithm to compute review panels}
+\label{a:rp}
+\end{algorithm}
+
+\begin{figure}[H]
+\begin{center}
+\resizebox{!}{0.75\textheight}{%
+\begin{tikzpicture}[auto,
+    ->,
+  %  shorten >=2pt,
+    >=stealth,
+    node distance=1.5cm,
+    init/.style={%
+      circle, thick, fill=black
+    },
+    fac/.style={%
+      rectangle, rounded corners=1.5mm, draw=black, thick, fill=lightblue, drop shadow,align=center,
+      text ragged, minimum height=2em, minimum width=2em, inner sep=6pt
+    },
+    can/.style={%
+      rectangle, rounded corners=1.5mm, draw=black, thick, fill=pink, drop shadow,align=center,
+      text ragged, minimum height=2em, minimum width=2em, inner sep=6pt
+    },
+    tl/.style={%
+      -latex,draw=black, very thick
+    }
+  ]
+
+  \node[fac](0) {0};
+  \node[fac](1) [below = of 0] {1};
+  \node[fac](2) [below = of 1] {2};
+  \node[fac](3) [below = of 2] {3};
+  \node[fac](4) [below = of 3] {4};
+  \node[fac](5) [below = of 4] {5};
+  \node[fac](6) [below = of 5] {6};
+
+  \node[can](100) [right = of 0] {100};
+  \node[can](101) [below = of 100] {101};
+  \node[can](102) [below = of 101] {102};
+  \node[can](103) [below = of 102] {103};
+  \node[can](104) [below = of 103] {104};
+  \node[can](105) [below = of 104] {105};
+  \node[can](106) [below = of 105] {106};
+  \node[can](107) [below = of 106] {107};
+  \node[can](108) [below = of 107] {108};
+  \node[can](109) [below = of 108] {109};
+  
+  \draw[-] (0) to node{1} (100);
+  \draw[-] (0) to node{1} (102);
+  \draw[-] (0) to node{2} (109);
+
+  \draw[-] (1) to node{1} (100);
+  \draw[-] (1) to node{2} (102);
+  \draw[-] (1) to node{1} (103);
+  \draw[-] (1) to node{1} (105);
+  \draw[-] (1) to node{1} (106);
+  \draw[-] (1) to node{1} (107);
+  \draw[-] (1) to node{1} (109);
+
+  \draw[-] (2) to node{1} (102);
+  \draw[-] (2) to node{1} (103);
+  \draw[-] (2) to node{1} (105);
+  \draw[-] (2) to node{1} (107);
+
+  \draw[-] (3) to node{1} (100);
+  \draw[-] (3) to node{1} (101);
+  \draw[-] (3) to node{1} (106);
+  \draw[-] (3) to node{1} (107);
+  \draw[-] (3) to node{2} (109);
+
+  \draw[-] (4) to node{1} (100);
+  \draw[-] (4) to node{1} (105);
+  \draw[-] (4) to node{1} (107);
+  \draw[-] (4) to node{1} (109);
+  
+  \draw[-] (5) to node{1} (101);
+  \draw[-] (5) to node{1} (102);
+  \draw[-] (5) to node{1} (103);
+  \draw[-] (5) to node{1} (104);
+  
+  \draw[-] (6) to node{1} (100);
+  \draw[-] (6) to node{1} (102);
+  \draw[-] (6) to node{2} (103);
+  \draw[-] (6) to node{1} (104);
+  \draw[-] (6) to node{1} (106);
+  \draw[-] (6) to node{1} (107);
+  \draw[-] (6) to node{1} (108);
+  \draw[-] (6) to node{2} (109);
+  
+  \end{tikzpicture}
+}
+
+\end{center}
+
+\caption{Faculty Candidate Mapping Graph}
+\label{f:stuck}
+\end{figure}
+
+
+\section{Experiment}
+
+\end{document}
