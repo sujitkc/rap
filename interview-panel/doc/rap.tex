@@ -13,7 +13,7 @@
 \usepackage{tikz-uml}
 \usepackage{alltt}
 \usepackage{mathpartir}
-
+\usepackage[retainorgcmds]{IEEEtrantools}
 \usetikzlibrary{positioning,shapes,arrows,backgrounds,fit, calc, shadows}
 
 \author{Sujit Kumar Chakrabarti, IIITB }
@@ -102,11 +102,13 @@ To formalise the discussion, we define the following:
 
 Topic score is indicative of how popular a particular topic is among the applicants. Faculty score is indicative of a faculty's involvement in popular topics. Topics will high $S_T$ are checked by a large number of applicants. If review panels are computed using the code in algorithm~\ref{a:rp}. For every application, a weight is assigned to each matching faculty based on the topics which are in the match. The following formulae are used:
 
-\begin{eqnarray}
-F(a) = faculty(M(a, \_)) \\
-\forall f \in F(a)\ w_T(f, a) = \sum_{t\in M(f, a)} \frac{1}{S_T(t)} \\
-L_f(a) = sort([(f_1, w(f_1, a)), (f_2, w(f_2, a)), ..., (f_2, w(f_2, a))], key=\lambda(a, b). b)
-\end{eqnarray}
+
+\subsection{By Faculty Scores}
+\begin{IEEEeqnarray}{lCl}
+F(a) & = & faculty(M(a, \_)) \\
+\forall f \in F(a)\ w_T(f, a) & = & \sum_{t\in M(f, a)} \frac{1}{S_T(t)} \\
+L_f(a) & = & sort([(f_1, w(f_1, a)), (f_2, w(f_2, a)), ..., (f_2, w(f_2, a))], key=\lambda(a, b). b)
+\end{IEEEeqnarray}
 
 The idea is to sort the faculty members with matching interest in such a way that faculty members matching a given application $a$ through rarer topics would be considered first to be there in the panel of the corresponding applicant compared to someone who matches through a more popular keyword. For example, if for two topics, $t_1$ and $t_2$, if $S_T(t_1) > S_T(t_2)$, and two faculty members $f_1$ and $f_2$ are matched with $a$ through $t_1$ and $t_2$, then, with everything else remaining the same, $f_2$ will be given more preference to be in the review panel of $a$ as compared to $f_1$.
 \begin{algorithm}
@@ -230,6 +232,19 @@ def calculate_review_panels(fac_apps):
 \label{f:stuck}
 \end{figure}
 
+\section{By Edge Ordering}
+We can compute interview panels by using a slight variant of the approach explained in the last subsection. Here, we compute the matching bipartite graph where the left group of nodes represents faculty and the right group represents candidates, just like before. The edge annotations, this time, are $(f : F, ts : 2^T, c : C)$. Interview panels are computed using the following steps:
+
+\begin{enumerate}
+\item For all edges e, edge weight $W(e)$ is computed as follows:
+\begin{eqnarray}
+W(e) = \frac{\sum\limits_{t \in e.ts}{\frac{1}{W(t)}}}{W(e.f) \times W(e.c)}
+\end{eqnarray}
+\item The edges then are sorted in a descending order of their weight.
+\item Finally, the interview panel for each candidate is computed by traversing the sorted edge list from top to bottom, and for each edge $e$ encountered along the way, $e.f$ is added to $panels[e.c]$ if currently, \\
+$|P(e.c)| < MAXSIZE\ \land \\ |panels(e.f)| < MAXPANELPERFACULTY$. Here, $P : C \mapsto 2^F$ maps each candidate to his/her interview panel. $panels: F \mapsto 2 ^{F \cup C}$ is the set of interview panels of which a given professor is a member.
+
+\end{enumerate}
 
 \section{Experiment}
 
