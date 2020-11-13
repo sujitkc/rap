@@ -6,7 +6,7 @@ import csv
 import string
 import functools
 
-PANEL_SIZE = 4
+PANEL_SIZE = 3
 ##################################################################################
 def read_contents(fileName):
   if(not os.path.isfile(fileName)):
@@ -16,7 +16,7 @@ def read_contents(fileName):
   csvContents = csv.reader(ifile)
   trimmedContents = []
   for row in csvContents:
-    trimmedRow = [cell for cell in row if cell is not ""]
+    trimmedRow = [cell for cell in row if cell != ""]
     if(len(trimmedRow) != 0):
       trimmedContents.append(trimmedRow)
     else:
@@ -41,6 +41,8 @@ Inputs:
   key  : faculty name
   value: set of topics
 '''
+
+
 def get_faculty_topics(contents):
   faculty = set(row[0] for row in contents)
   faculty_topics = {}
@@ -144,13 +146,24 @@ def calculate_review_panels(fac_apps):
     for fac in faculty_score:
       for f, a, ts in fac_apps:
         if f == fac and a == app:
+# common topic score + Rare topic will get more importance
           topic_weight = sum([1.0 / topic_score[t] for t in ts])
-          match_score = topic_weight / faculty_score[fac]
+# Rare faculty will get more importance       
+          match_score = topic_weight / faculty_score[fac] 
+
           app_fac_list.append((fac, match_score))
 
     app_fac_list.sort(key=second, reverse=True)
+    # print(app_fac_list)
+    # print("keshav")
     review_panels[app] = app_fac_list
+
+  # for t in review_panels:
+  #   print(t)
+  #   print(review_panels[t])
+  #   print("\n")
   return review_panels
+
 ##################################################################################
 
 ##################################################################################
@@ -167,9 +180,12 @@ def calculate_faculty_load(review_panels):
   for fac in faculty_score:
     faculty_load[fac] = []
     for app in review_panels:
+      # print(review_panels[app])
+      # print("k")
       panel = map(first, (review_panels[app])[:PANEL_SIZE])
       if fac in panel:
         faculty_load[fac].append(app)
+  # print(faculty_load)
   return faculty_load
 ##################################################################################
 
@@ -191,9 +207,10 @@ Input:
   f : faculty name
   fac_app : Applications corresponding to the faculty member.
 '''
+
 def print_fac_app_to_file(f, fac_app):
   fname = f.replace(" ", "_")
-  fout = open("data/output/faculty-application" + fname + ".csv", "w")
+  fout = open("data/output/faculty-application/" + fname + ".csv", "w")
   fout.write(string_of_fac_apps(fac_apps))
   fout.close()
 ##################################################################################
@@ -208,15 +225,30 @@ def print_referral_to_file(f, apps):
 
 ##################################################################################
 def print_review_panels_to_file(review_panels):
-  fout = open("data/output/referrals/review-panels.txt", "w")
+  fout = open("data/output/panel/review-panels.txt", "w")
+  count=0
   for app in review_panels:
     fout.write("\n***************************************************")
+    count+=1
+    fout.write("\nInterview-panel : "+str(count))
     fout.write("\n" + app)
     panel = functools.reduce(lambda x, y: x + "\n\t" + y[0], review_panels[app][:PANEL_SIZE], "\n")
     fout.write(panel)
     fout.write("\n***************************************************")
   fout.close()
 ##################################################################################
+def create_review_panels_to_file(review_panels):
+  fout = open("data/output/panel/review-panels.csv", "w")
+  count=0
+  for app in review_panels:
+    count+=1
+    fout.write(str(app)+",")
+    panel = functools.reduce(lambda x, y: x + y[0] + ",",review_panels[app][:PANEL_SIZE],"")
+    # print(review_panels[app][:PANEL_SIZE])
+    k=str(panel)
+    fout.write(k[:-1])
+    fout.write("\n")
+  fout.close()
 
 
 '''
@@ -252,14 +284,19 @@ panels.
 if __name__ == "__main__":
   faculty_topics = get_faculty_topics(read_contents("data/topics.csv"))
   application_topics = get_application_topics(read_contents("data/research-applications-may-2019.csv"))
+  # print(faculty_topics)
+  # print(application_topics)
    
   all_fac_apps = []
   for f in faculty_topics:
     fac_apps = get_faculty_applications(f, faculty_topics, application_topics)
+    print_fac_app_to_file(f, fac_apps)
     all_fac_apps.extend(fac_apps)
+
   review_panels = calculate_review_panels(all_fac_apps)
   faculty_load = calculate_faculty_load(review_panels)
   print_review_panels_to_file(review_panels)
+  create_review_panels_to_file(review_panels)
   for fac in faculty_load:
     print_referral_to_file(fac, faculty_load[fac])
 ##################################################################################

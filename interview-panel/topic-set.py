@@ -15,7 +15,7 @@ def readContents(fileName):
   csvContents = csv.reader(ifile)
   trimmedContents = []
   for row in csvContents:
-    trimmedRow = [cell for cell in row if cell is not ""]
+    trimmedRow = [cell for cell in row if cell !=  ""]
     if(len(trimmedRow) != 0):
       trimmedContents.append(trimmedRow)
     else:
@@ -36,7 +36,7 @@ def add_unique(utopics, topic):
     utopics.append(topic)
 
 if __name__ == "__main__":
-  contents = readContents("topics.csv")
+  contents = readContents("data/topics.csv")
   topics = [t for t, _ in contents]
 #  ltopics = set([t.lower() for t in topics])
 
