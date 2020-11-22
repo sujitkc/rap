@@ -5,7 +5,8 @@ import adjacencylist as G
 import edges as E
 import copy
 import numpy
-
+# for chaitin's algorithm
+import interview as I
 
 
 final_stack=[]
@@ -37,7 +38,7 @@ def chaitin_algo(Dict,k):
     return stack
 
 def make_panel_graph(contents):
-    fileName = "data/output/panel/review-panels.csv"
+    fileName = "data/output/panel/review-panels1.csv"
     if (not os.path.isfile(fileName)):
         print(fileName + ": file does not exist.")
     data = open(fileName, "r")
@@ -97,53 +98,81 @@ def write_mci(g):
 #     return ans
 
 
-def find_key(graph,maxx):
-    start=1
-    end=maxx
-    while(start<=end):
-        mid=int((start+end)/2)
-        stack=chaitin_algo(copy.deepcopy(graph),mid)
-        if(len(stack)==0):
-            start=mid+1
-        else:
-            end=mid-1
-            ans=mid
-    stack1,child =genetic_algo(copy.deepcopy(graph),ans)
-    if(child != []):
-        for i,j in child.items():
-            print("Candidate Email: "+str(i)+" :: Slot: "+str(j))
-    return ans
+
+def find_key(graph,maxx):    
+    count=I.find_key(copy.deepcopy(graph),len(graph))
+    print(count)
+    while(count<=maxx):
+        stack,child=genetic_algo(copy.deepcopy(graph),count)
+        if(stack==0):
+            break
+        count+=1
+
+    for i,j in child.items():
+        print("Candidate Email: "+str(i)+" :: Slot: "+str(j))
+    return count
+
+
+# def find_key(graph,maxx):
+#     start=1
+#     end=maxx
+#     while(start<=end):
+#         mid=int((start+end)/2)
+#         stack=chaitin_algo(copy.deepcopy(graph),mid)
+#         if(len(stack)==0):
+#             start=mid+1
+#         else:
+#             end=mid-1
+#             ans=mid
+#     stack1,child =genetic_algo(copy.deepcopy(graph),ans)
+#     if(child != []):
+#         for i,j in child.items():
+#             print("Candidate Email: "+str(i)+" :: Slot: "+str(j))
+#     return ans
 
 def genetic_algo(graph, color):
     chromosomes = []
-    for i in range (200):
+    for i in range (50):
         colors = {}
         for i in graph.keys():
             colors[i] = random.randint(0, color - 1)
         chromosomes.append(colors)
     val, child = run(chromosomes, graph, color)
-    if val <= color:
-        return color ,child
-    return 0 , []    
+    # if conflict are less than the number of colors then the conflict can be resolved in that many colors hence we can term it as valid solution
+    print("eshita")
+    if val == 0: 
+        return 0 ,child
+    return 1000 , []    
+
 
 def run(population, graph, color):
+    temp = [k for k in range(20)]
     col = [i for i in range(color)]
     count = 0
-    while(count < 300):
-        parent1, parent2 = parentSelection(population)
+    fitChild = 1000
+    generation=20000
+
+    while(count<generation and fitChild!=0):
+        print("Iteration"+str(count))
+        temp.pop(0)
+        temp.append(fitChild)
+        parent1, parent2 = parentSelection(population,count,generation,graph)
+        # parent1, parent2 = parentSelection(population,graph)
         child = crossover(parent1, parent2, graph, population)
-   
         child = mutate(child, graph, col)
         fitChild = fitness(child, graph)
-        print(fitChild)
+
+        print("fitness of child "+str(fitChild))
 
         fitP1 = fitness(population[parent1], graph)
         fitP2 = fitness(population[parent2], graph)
         if(len(population)<2):
             return fitChild ,child
         if(fitChild < fitP1 and fitChild < fitP2):
-            population.pop(parent1)
-            population.pop(parent2 - 1)
+            if(fitP1<fitP2):     
+                population.pop(parent2)
+            else:
+                population.pop(parent1)
             population.append(child)
         elif(fitChild < fitP1):
             population.pop(parent1)
@@ -155,20 +184,41 @@ def run(population, graph, color):
     return fitChild ,child
 
 def crossover(parent1, parent2, graph, population):
-    crosspoint = random.randint(0, len(population) - 1)
-    child = {}
     vals = list(graph.keys())
     vals.sort()
+    crosspoint = random.randint(0, len(vals) - 1)
+    child = {}
+
     for i in range(crosspoint):
         child[vals[i]] = population[parent1][vals[i]]
     for i in range(crosspoint, len(vals)):
         child[vals[i]] = population[parent2][vals[i]]
     return child
 
-def parentSelection(population):
+def parentSelection(population, count,generation,graph):
+    if(count<(generation*0.75)):
+        return parentSelectionMethod1(population)
+    else:
+        return parentSelectionMethod2(population,graph)
+
+def parentSelectionMethod1(population):    
     parent1 = random.randint( 0, len(population) - 1)
     parent2 = random.randint(0, len(population) - 1)
+    return parent1, parent2
 
+def parentSelectionMethod2(population, graph):
+    pf1 = len(graph)
+    pf2 = len(graph)
+    parent1 = random.randint(0, len(population) - 1)
+    parent2 = random.randint(0, len(population) - 1)
+    for i in range(len(population)):
+        pf = fitness(population[i], graph)
+        if pf < pf1:
+            pf1=pf
+            parent1 = i
+        elif pf < pf2 :
+            pf2=pf
+            parent2 = i
     return parent1, parent2
 
 def fitness(chromosome, graph):
@@ -185,7 +235,13 @@ def fit(id, graph, col, chromosome):
     return conflict
 
 def mutate(chromosome, graph, colour):
-    for i in chromosome:
+    # conflictList = {}
+    # for i in chromosome:
+    #     conflictList[i] = fit(i, graph, chromosome[i], chromosome)
+    # conflictList.sort()
+    # data= [k for k in conflictList()]    
+    data = [k for k in sorted(graph, key=lambda k: len(graph[k]), reverse=True)]
+    for i in data:
         check(i, graph, chromosome[i], chromosome, colour)
     return chromosome
 

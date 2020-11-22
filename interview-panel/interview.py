@@ -66,7 +66,7 @@ def slot_allotment(slots,graph):
 
 
 def make_panel_graph(contents):
-    fileName = "data/output/panel/review-panels.csv"
+    fileName = "data/output/panel/review-panels1.csv"
     if (not os.path.isfile(fileName)):
         print(fileName + ": file does not exist.")
     data = open(fileName, "r")
@@ -114,14 +114,14 @@ def make_panel_graph(contents):
 
 def write_mci(g):
   dim = G.number_of_nodes(g)
-  print ("mclheader\nmcltype matrix\ndimensions " + str(dim) + "x" + str(dim) + "\nmclmatrix\nbegin")
+  # print ("mclheader\nmcltype matrix\ndimensions " + str(dim) + "x" + str(dim) + "\nmclmatrix\nbegin")
   for s in g:
     line = str(s)
     for (d, w) in g[s]:
       if(w != 0):
         line += " " + str(d) + ":" + str(w)
     line += "\t$"
-    print (line)
+    # print (line)
 
 # def print_review_panels():
 #   fout = open("data/output/interview-slots/panel-slots.txt", "w")
