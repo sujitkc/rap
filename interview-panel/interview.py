@@ -4,11 +4,11 @@ import adjacencylist as G
 import edges as E
 import copy
 
-final_stack=[]
+
 def find_key(graph,maxx):
     start=1
     end=maxx
-    global final_stack
+    final_stack = []
     while(start<=end):
         mid=int((start+end)/2)
         stack=chaitin_algo(copy.deepcopy(graph),mid)
@@ -18,7 +18,7 @@ def find_key(graph,maxx):
             end=mid-1
             ans=mid
             final_stack=stack
-    return ans
+    return ans, final_stack
 
 def delete_node(Dict,key):
     del Dict[key]
@@ -46,7 +46,7 @@ def chaitin_algo(Dict,k):
             break
     return stack
 
-def slot_allotment(slots,graph):
+def slot_allotment(slots,graph, final_stack):
     colour_dict={}
     keys_list = list(graph)
     for s in keys_list:
@@ -109,19 +109,16 @@ def make_panel_graph(contents):
     return graph_dict
 
 
-
-
-
 def write_mci(g):
   dim = G.number_of_nodes(g)
-  # print ("mclheader\nmcltype matrix\ndimensions " + str(dim) + "x" + str(dim) + "\nmclmatrix\nbegin")
+  print ("mclheader\nmcltype matrix\ndimensions " + str(dim) + "x" + str(dim) + "\nmclmatrix\nbegin")
   for s in g:
     line = str(s)
     for (d, w) in g[s]:
       if(w != 0):
         line += " " + str(d) + ":" + str(w)
     line += "\t$"
-    # print (line)
+    print (line)
 
 # def print_review_panels():
 #   fout = open("data/output/interview-slots/panel-slots.txt", "w")
@@ -141,11 +138,11 @@ if __name__ == "__main__":
 
     contents={}
     graph_dict=make_panel_graph(contents)
-    slots=find_key(graph_dict,len(graph_dict))
+    slots, final_stack=find_key(graph_dict,len(graph_dict))
     # print(final_stack)
     print("\n\nMinimum number of slots for this graph are: "+str(slots))
 
-    colour_slots=slot_allotment(slots,graph_dict)
+    colour_slots=slot_allotment(slots,graph_dict, final_stack)
     print("\nSlots alloted to each Interview-Panel:\n")
     k=0
     for i in colour_slots:

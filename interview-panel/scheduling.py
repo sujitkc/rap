@@ -4,13 +4,12 @@ import random
 import adjacencylist as G
 import edges as E
 import copy
-import chromosome as C
 import numpy
 # for chaitin's algorithm
 import interview as I
 
 def make_panel_graph(contents):
-    fileName = "data/output/panel/review-panels.csv"
+    fileName = "data/output/panel/review-panels1.csv"
     if (not os.path.isfile(fileName)):
         print(fileName + ": file does not exist.")
     data = open(fileName, "r")
@@ -52,26 +51,26 @@ def write_mci(g):
         line += "\t$"
         print(line)
 
+
+
 def genetic_algo(graph, color):
     chromosomes = []
     for i in range (50):
         colors = {}
         for i in graph.keys():
             colors[i] = random.randint(0, color - 1)
-        fit = fitness(colors, graph)
-        obj = C.chromosome(colors,fit)
-        chromosomes.append(obj)
-    child = run(chromosomes, graph, color)
+        chromosomes.append(colors)
+    val, child = run(chromosomes, graph, color)
     # if conflict are less than the number of colors then the conflict can be resolved in that many colors hence we can term it as valid solution
-    if child.fitness == 0:
-        return 0 ,child.generation
-    return len(graph) , []
+    if val == 0:
+        return 0 ,child
+    return 1000 , []
 
 def find_key(graph, maxx):
     count, final_stack=I.find_key(copy.deepcopy(graph),len(graph))
     start = int(count / 2)
     end = count
-    val = count+1
+    val = count
     while(start<=end):
         mid = int((start + end) / 2)
         stack,child=genetic_algo(copy.deepcopy(graph),mid)
@@ -111,29 +110,30 @@ def run(population, graph, color):
         temp.append(fitChild)
         parent1, parent2 = parentSelection(population,count,generation,graph)
         # parent1, parent2 = parentSelection(population,graph)
-        child = crossover(parent1.generation, parent2.generation, graph, population)
+        child = crossover(parent1, parent2, graph, population)
         child = mutate(child, graph, col)
         fitChild = fitness(child, graph)
-        child = C.chromosome(child, fitChild)
+
         print("fitness of child "+str(fitChild))
-        fitP1 = parent1.fitness
-        fitP2 = parent2.fitness
+
+        fitP1 = fitness(population[parent1], graph)
+        fitP2 = fitness(population[parent2], graph)
         if(len(population)<2):
-            return child
+            return fitChild ,child
         if(fitChild < fitP1 and fitChild < fitP2):
             if(fitP1<fitP2):
-                population.remove(parent2)
+                population.pop(parent2)
             else:
-                population.remove(parent1)
+                population.pop(parent1)
             population.append(child)
         elif(fitChild < fitP1):
-            population.remove(parent1)
+            population.pop(parent1)
             population.append(child)
         elif(fitChild < fitP2):
-            population.remove(parent2)
+            population.pop(parent2)
             population.append(child)
         count = count + 1
-    return child
+    return fitChild ,child
 
 def crossover(parent1, parent2, graph, population):
     vals = list(graph.keys())
@@ -142,9 +142,9 @@ def crossover(parent1, parent2, graph, population):
     child = {}
 
     for i in range(crosspoint):
-        child[vals[i]] = parent1[vals[i]]
+        child[vals[i]] = population[parent1][vals[i]]
     for i in range(crosspoint, len(vals)):
-        child[vals[i]] = parent2[vals[i]]
+        child[vals[i]] = population[parent2][vals[i]]
     return child
 
 
@@ -158,7 +158,7 @@ def parentSelection(population, count,generation,graph):
 def parentSelectionMethod1(population):
     parent1 = random.randint( 0, len(population) - 1)
     parent2 = random.randint(0, len(population) - 1)
-    return population[parent1], population[parent2]
+    return parent1, parent2
 
 def parentSelectionMethod2(population, graph):
     pf1 = len(graph)
@@ -166,14 +166,14 @@ def parentSelectionMethod2(population, graph):
     parent1 = random.randint(0, len(population) - 1)
     parent2 = random.randint(0, len(population) - 1)
     for i in range(len(population)):
-        pf = population[i].fitness  
+        pf = fitness(population[i], graph)
         if pf < pf1:
             pf1=pf
             parent1 = i
         elif pf < pf2 :
             pf2=pf
             parent2 = i
-    return population[parent1], population[parent2]
+    return parent1, parent2
 
 def fitness(chromosome, graph):
     conflict = 0
@@ -189,14 +189,11 @@ def fit(id, graph, col, chromosome):
     return conflict
 
 def mutate(chromosome, graph, colour):
-    # Mutate approach one : Assign valid color to node with higher number of conflicts
     # conflictList = {}
     # for i in chromosome:
     #     conflictList[i] = fit(i, graph, chromosome[i], chromosome)
     # conflictList.sort()
     # data= [k for k in conflictList()]
-
-    # Mutate approach two : Assign valid color to node with higher number of edges
     data = [k for k in sorted(graph, key=lambda k: len(graph[k]), reverse=True)]
     for i in data:
         check(i, graph, chromosome[i], chromosome, colour)
