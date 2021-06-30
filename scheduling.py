@@ -8,53 +8,41 @@ import numpy
 # for chaitin's algorithm
 import interview as I
 
-def make_panel_graph(contents):
-    fileName = "data/output/panel/review-panels.csv"
-    if (not os.path.isfile(fileName)):
-        print(fileName + ": file does not exist.")
-    data = open(fileName, "r")
-    csvData = csv.reader(data)
-    graph = G.empty_graph()
-    for row in csvData:
-        contents[row[0]] = []
-        for i in range(len(row)):
-            if (i == 0):
-                continue
-            else:
-                contents[row[0]].append(row[i])
-    for f in contents.keys():
-        for c in contents.keys():
-            G.add_edge(E.make_edge(f, 0, c), graph)
-    keys = list(contents.keys())
-    for i in range(len(contents)):
-        for j in range(len(contents)):
-            if (any(val in contents[keys[i]] for val in contents[keys[j]])):
-                if (keys[i] != keys[j]):
-                    G.add_edge(E.make_edge(keys[i], 1, keys[j]), graph)
-    graph_dict = {}
-    for s in graph:
-        graph_dict[s] = []
-        for (d, w) in graph[s]:
-            if (w != 0):
-                graph_dict[s].append(d)
-    return graph_dict
+# def make_panel_graph(contents):
+#     fileName = "data/output/panel/review-panels.csv"
+#     if (not os.path.isfile(fileName)):
+#         print(fileName + ": file does not exist.")
+#     data = open(fileName, "r")
+#     csvData = csv.reader(data)
+#     graph = G.empty_graph()
+#     for row in csvData:
+#         contents[row[0]] = []
+#         for i in range(len(row)):
+#             if (i == 0):
+#                 continue
+#             else:
+#                 contents[row[0]].append(row[i])
+#     for f in contents.keys():
+#         for c in contents.keys():
+#             G.add_edge(E.make_edge(f, 0, c), graph)
+#     keys = list(contents.keys())
+#     for i in range(len(contents)):
+#         for j in range(len(contents)):
+#             if (any(val in contents[keys[i]] for val in contents[keys[j]])):
+#                 if (keys[i] != keys[j]):
+#                     G.add_edge(E.make_edge(keys[i], 1, keys[j]), graph)
+#     graph_dict = {}
+#     for s in graph:
+#         graph_dict[s] = []
+#         for (d, w) in graph[s]:
+#             if (w != 0):
+#                 graph_dict[s].append(d)
+#     return graph_dict
 
-    # returns 
-    # { 'candidate1@gmail.com': ['candidate3@gmail.com'], 
-    #   'candidate2@gmail.com': [], 
-    #   'candidate3@gmail.com': ['candidate1@gmail.com']}
-
-
-def write_mci(g):
-    dim = G.number_of_nodes(g)
-    # print("mclheader\nmcltype matrix\ndimensions " + str(dim) + "x" + str(dim) + "\nmclmatrix\nbegin")
-    for s in g:
-        line = str(s)
-        for (d, w) in g[s]:
-            if (w != 0):
-                line += " " + str(d) + ":" + str(w)
-        line += "\t$"
-        # print(line)
+#     # returns 
+#     # { 'candidate1@gmail.com': ['candidate3@gmail.com'], 
+#     #   'candidate2@gmail.com': [], 
+#     #   'candidate3@gmail.com': ['candidate1@gmail.com']}
 
 
 
@@ -125,7 +113,7 @@ def run(population, graph, color):
     col = [i for i in range(color)]
     count = 0
     fitChild = len(graph)
-    generation=2000
+    generation=300
 
     while(count<generation and fitChild!=0):
         # print("Iteration"+str(count))
@@ -170,6 +158,7 @@ def crossover(parent1, parent2, graph, population):
     for i in range(crosspoint, len(vals)):
         child[vals[i]] = population[parent2][vals[i]]
     return child
+    # child is a dictionary (same as a parent dictionary)
 
 
 # Parent selection by simulated annealing
@@ -237,11 +226,13 @@ def mutate(chromosome, graph, colour):
     data = [k for k in sorted(graph, key=lambda k: len(graph[k]), reverse=True)]
     # data is list of emailids sorted in descending order of no of adjacent nodes 
     for i in data:
-        check(i, graph, chromosome[i], chromosome, colour)
+        check2(i, graph, chromosome[i], chromosome, colour)
     return chromosome
 
+
+
 """Just coloring the adjacent nodes"""
-def check(id, graph, col, chromosome, colour):
+def check1(id, graph, col, chromosome, colour):
     adjCol = []
     for d in graph[id]:
         adjCol.append(chromosome[d])
@@ -256,12 +247,23 @@ def check(id, graph, col, chromosome, colour):
             # coloring the adjacent nodes from one of the valid colors
             validCol.pop(0)
 
+def check2(id, graph, col, chromosome, colour):
+    adjCol = []
+    for d in graph[id]:
+        adjCol.append(chromosome[d])
+    # adjCol list of adjacent colors to the current id
+    for val in graph[id]:
+        if(col == chromosome[val]):
+            if(len(colour)<1):
+                break
+            chromosome[val] = random.choice(colour)
+
 def Diff(li1, li2):
     return (list(list(set(li1)-set(li2)) + list(set(li2)-set(li1))))
 
 if __name__ == "__main__":
     contents = {}
-    graph_dict = make_panel_graph(contents)
+    graph_dict = I.make_panel_graph(contents)
     slots=find_key(graph_dict,len(graph_dict))
     print("\nMinimum number of slots to conduct the interview are:")
     print(slots)

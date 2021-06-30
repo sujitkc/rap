@@ -117,52 +117,62 @@ def make_panel_graph(contents):
     # }
     # print(contents)
 
-    # Doubt
-    # Adds edges from every candidate to every candidate
-    for f in contents.keys():
-        for c in contents.keys():
-            G.add_edge(E.make_edge(f, 0, c), graph)
+    #keys, graph = adding_edges_all_nodes(contents, graph)    
+    
     keys = list(contents.keys())
-    # keys = list of candidates
-
     # Adds edge from a candidate to a candidate if they both have a same prof
-    for i in range(len(contents)):
-        for j in range(len(contents)):
-            if(any(val in contents[keys[i]] for val in contents[keys[j]])):
-                if(keys[i]!=keys[j]):
-                    G.add_edge(E.make_edge(keys[i], 1, keys[j]), graph)
 
-
-    # Doubt: Multiple edges bw two nodes????? 
-    graph_dict = {}
-    # print(graph)
+    graph = adding_weight_to_edges(contents, graph, keys)
+    
     # graph = {
     #   'candidate1@gmail.com': [('candidate1@gmail.com', 0), ('candidate2@gmail.com', 0), ('candidate3@gmail.com', 1)], 
     #   'candidate2@gmail.com': [('candidate1@gmail.com', 0), ('candidate2@gmail.com', 0), ('candidate3@gmail.com', 0)], 'candidate3@gmail.com': [('candidate1@gmail.com', 1), ('candidate2@gmail.com', 0), ('candidate3@gmail.com', 0)]}
-    for s in graph:
+
+    
+    graph_dict = create_graph_dictionary(graph)
+
+    return graph_dict
+
+def create_graph_dictionary(graph):
+  graph_dict = {}
+  for s in graph:
         graph_dict[s] = []
         for (d, w) in graph[s]:
             if(w != 0):
                 graph_dict[s].append(d)
-    # print(graph_dict)
-    return graph_dict
+  return graph_dict
 
-    # returns 
-    # { 'candidate1@gmail.com': ['candidate3@gmail.com'], 
-    #   'candidate2@gmail.com': [], 
-    #   'candidate3@gmail.com': ['candidate1@gmail.com']}
+  # returns graph_dict = 
+  # { 'candidate1@gmail.com': ['candidate3@gmail.com'], 
+  #   'candidate2@gmail.com': [], 
+  #   'candidate3@gmail.com': ['candidate1@gmail.com']}
+  
 
 
-def write_mci(g):
-  dim = G.number_of_nodes(g)
-#   print ("mclheader\nmcltype matrix\ndimensions " + str(dim) + "x" + str(dim) + "\nmclmatrix\nbegin")
-  for s in g:
-    line = str(s)
-    for (d, w) in g[s]:
-      if(w != 0):
-        line += " " + str(d) + ":" + str(w)
-    line += "\t$"
-    # print (line)
+#def adding_edges_all_nodes(contents, graph):
+#  for f in contents.keys():
+#      for c in contents.keys():
+#        G.add_edge(E.make_edge(f, 0, c), graph)
+#  keys = list(contents.keys())
+#  return keys, graph
+#  # keys = list of candidates
+
+def adding_weight_to_edges (contents, graph, keys):
+  for i in range(len(contents)):
+    for j in range(len(contents)):
+      if(any(val in contents[keys[i]] for val in contents[keys[j]])):
+        if(keys[i]!=keys[j]):
+          G.add_edge(E.make_edge(keys[i], 1, keys[j]), graph)
+  return graph
+
+
+def print_interview_slots (colour_slots, contents):
+    k=0
+    for i in colour_slots:
+        k+=1
+        print("\nInterview-Panel: "+str(k)+" || candidate id: "+str(i)+" || prof id: "+ str(contents[i])+" \n------->>Slot: "+str(colour_slots[i]))
+
+
 
 # def print_review_panels():
 #   fout = open("data/output/interview-slots/panel-slots.txt", "w")
@@ -177,7 +187,7 @@ def write_mci(g):
 #     fout.write("\n***************************************************")
 #   fout.close()
 
-
+##################################################################################
 if __name__ == "__main__":
 
     contents={}
@@ -187,21 +197,14 @@ if __name__ == "__main__":
     #   'candidate3@gmail.com': ['candidate1@gmail.com']}
 
     slots, final_stack=find_key(graph_dict,len(graph_dict))
-    # print(final_stack)
-    print("\n\nMinimum number of slots for this graph are: "+str(slots))
 
     colour_slots=slot_allotment(slots,graph_dict, final_stack)
     print("\nSlots alloted to each Interview-Panel:\n")
-    k=0
-    for i in colour_slots:
-        k+=1
-        print("\nInterview-Panel: "+str(k)+" || candidate id: "+str(i)+" || prof id: "+ str(contents[i])+" \n------->>Slot: "+str(colour_slots[i]))
 
-    print("\n\nMinimum number of slots for this graph are: "+str(slots))
+    print_interview_slots(colour_slots, contents)
+
+    print("\n\nMinimum number of slots for this dataset: "+str(slots))
     
-
-    # make_panel_graph(contents)
-
 
 
 """
