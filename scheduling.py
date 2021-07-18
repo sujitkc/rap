@@ -24,7 +24,6 @@ def genetic_algo(graph, color):
         chromosomes.append(colors)
     # chromosomes is a list of dictionaries
     val, child = run(chromosomes, graph, color)
-    # seniors' fucking stupid comment
     # if conflict are less than the number of colors then the conflict can be resolved in that many colors hence we can term it as valid solution
     # conflict = 0 -> final colored graph
     if val == 0:
