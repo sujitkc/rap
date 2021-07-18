@@ -8,42 +8,6 @@ import numpy
 # for chaitin's algorithm
 import interview as I
 
-# def make_panel_graph(contents):
-#     fileName = "data/output/panel/review-panels.csv"
-#     if (not os.path.isfile(fileName)):
-#         print(fileName + ": file does not exist.")
-#     data = open(fileName, "r")
-#     csvData = csv.reader(data)
-#     graph = G.empty_graph()
-#     for row in csvData:
-#         contents[row[0]] = []
-#         for i in range(len(row)):
-#             if (i == 0):
-#                 continue
-#             else:
-#                 contents[row[0]].append(row[i])
-#     for f in contents.keys():
-#         for c in contents.keys():
-#             G.add_edge(E.make_edge(f, 0, c), graph)
-#     keys = list(contents.keys())
-#     for i in range(len(contents)):
-#         for j in range(len(contents)):
-#             if (any(val in contents[keys[i]] for val in contents[keys[j]])):
-#                 if (keys[i] != keys[j]):
-#                     G.add_edge(E.make_edge(keys[i], 1, keys[j]), graph)
-#     graph_dict = {}
-#     for s in graph:
-#         graph_dict[s] = []
-#         for (d, w) in graph[s]:
-#             if (w != 0):
-#                 graph_dict[s].append(d)
-#     return graph_dict
-
-#     # returns 
-#     # { 'candidate1@gmail.com': ['candidate3@gmail.com'], 
-#     #   'candidate2@gmail.com': [], 
-#     #   'candidate3@gmail.com': ['candidate1@gmail.com']}
-
 
 
 def genetic_algo(graph, color):
@@ -53,8 +17,9 @@ def genetic_algo(graph, color):
     chromosomes = []
     for i in range (50):
         colors = {}
-        for i in graph.keys():
-            colors[i] = random.randint(0, color - 1)
+        # for i in graph.keys():
+        #     colors[i] = random.randint(0, color - 1)
+        colors = {i: (random.randint(0, color - 1)) for i in graph.keys()}
         # colors = {"candidate_id": random_number}
         chromosomes.append(colors)
     # chromosomes is a list of dictionaries
@@ -129,7 +94,7 @@ def run(population, graph, color):
 
         fitP1 = fitness(population[parent1], graph)
         fitP2 = fitness(population[parent2], graph)
-        if(len(population)<2):
+        if(len(population) < 2):
             return fitChild ,child
         if(fitChild < fitP1 and fitChild < fitP2):
             if(fitP1<fitP2):
@@ -146,6 +111,7 @@ def run(population, graph, color):
         count = count + 1
     return fitChild ,child
     # returning fitness of the child and child itself
+
 
 def crossover(parent1, parent2, graph, population):
     vals = list(graph.keys())
@@ -189,7 +155,6 @@ def parentSelectionMethod2(population, graph):
             pf2=pf
             parent2 = i
     return parent1, parent2
-
 def fitness(chromosome, graph):
     # chromosome is a dictionary
     conflict = 0
@@ -226,16 +191,21 @@ def mutate(chromosome, graph, colour):
     data = [k for k in sorted(graph, key=lambda k: len(graph[k]), reverse=True)]
     # data is list of emailids sorted in descending order of no of adjacent nodes 
     for i in data:
-        check2(i, graph, chromosome[i], chromosome, colour)
+        check1(i, graph, chromosome[i], chromosome, colour)
     return chromosome
 
-
+# def mutateSelectMethod():
+#   if(count<(generation*0.5)):
+#         return parentSelectionMethod1(population)
+#   else:
+#         return parentSelectionMethod2(population,graph)
 
 """Just coloring the adjacent nodes"""
 def check1(id, graph, col, chromosome, colour):
     adjCol = []
-    for d in graph[id]:
-        adjCol.append(chromosome[d])
+    # for d in graph[id]:
+    #     adjCol.append(chromosome[d])
+    adjCol = [chromosome[d] for d in graph[id]]
     # adjCol list of adjacent colors to the current id
     validCol = Diff(colour, adjCol)
     # validCol is the list of valid colors for that id (candidate/node)
@@ -248,9 +218,10 @@ def check1(id, graph, col, chromosome, colour):
             validCol.pop(0)
 
 def check2(id, graph, col, chromosome, colour):
-    adjCol = []
-    for d in graph[id]:
-        adjCol.append(chromosome[d])
+    # adjCol = []
+    # for d in graph[id]:
+    #     adjCol.append(chromosome[d])
+    # adjCol = [chromosome[d] for d in graph[id]]
     # adjCol list of adjacent colors to the current id
     for val in graph[id]:
         if(col == chromosome[val]):

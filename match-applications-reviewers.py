@@ -310,9 +310,9 @@ panels.
 '''
 ##################################################################################
 if __name__ == "__main__":
-  faculty_topics = get_faculty_topics(read_contents("data/topics.csv"))
+  faculty_topics = get_faculty_topics(read_contents("data/final-topics-21.csv"))
   # faculty_topics is a dictionary in the form of {prof_name: list_of_topics}
-  application_topics = get_application_topics(read_contents("data/research-applications-may-2019.csv"))
+  application_topics = get_application_topics(read_contents("data/final-research-applications-21.csv"))
   # application_topics is a dictionary in the form of {candidate_email: list_of_topics}
 
   # print(faculty_topics)

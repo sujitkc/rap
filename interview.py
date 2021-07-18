@@ -48,9 +48,14 @@ def find_key(graph,maxx):
 
 def delete_node(Dict,key):
     del Dict[key]
+
     for s in Dict:
         if key in Dict[s]:
             Dict[s].remove(key)
+
+    # print(temp)
+    # print(Dict)
+
 
 def chaitin_algo(Dict,k):
     # Dict format = graph_dict in the make_panel_graph function
@@ -79,8 +84,11 @@ def slot_allotment(slots,graph, final_stack):
     colour_dict={}
     keys_list = list(graph)
     # keys_listis just the list of candidates
-    for s in keys_list:
-        colour_dict[s]=0
+    # for s in keys_list:
+    #     colour_dict[s]=0
+    colour_dict = {s:0 for s in keys_list}
+    #colour_dict = [0 for s in keys_list]
+    
     while(len(final_stack)>0):
         key=final_stack.pop()
         for count in range(1,slots+1):
@@ -126,7 +134,8 @@ def make_panel_graph(contents):
     
     # graph = {
     #   'candidate1@gmail.com': [('candidate1@gmail.com', 0), ('candidate2@gmail.com', 0), ('candidate3@gmail.com', 1)], 
-    #   'candidate2@gmail.com': [('candidate1@gmail.com', 0), ('candidate2@gmail.com', 0), ('candidate3@gmail.com', 0)], 'candidate3@gmail.com': [('candidate1@gmail.com', 1), ('candidate2@gmail.com', 0), ('candidate3@gmail.com', 0)]}
+    #   'candidate2@gmail.com': [('candidate1@gmail.com', 0), ('candidate2@gmail.com', 0), ('candidate3@gmail.com', 0)], 
+    # 'candidate3@gmail.com': [('candidate1@gmail.com', 1), ('candidate2@gmail.com', 0), ('candidate3@gmail.com', 0)]}
 
     
     graph_dict = create_graph_dictionary(graph)
