@@ -221,8 +221,8 @@ def build_graph(FT, CT):
 
   edges = G.get_edges(FC)
 
-  F = FT.keys()
-  C = CT.keys()
+  F = list(FT.keys())
+  C = list(CT.keys())
   for f in F:
     for t in FT[f]:
       for c in C:
@@ -249,15 +249,14 @@ def build_graph(FT, CT):
 
 def write_mci(g):
   dim = G.number_of_nodes(g)
-  print "(mclheader\nmcltype matrix\ndimensions " + str(dim) + "x" + str(dim) + "\n)\n(mclmatrix\nbegin"
+  print ("mclheader\nmcltype matrix\ndimensions " + str(dim) + "x" + str(dim) + "\nmclmatrix\nbegin")
   for s in g:
     line = str(s)
     for (d, w) in g[s]:
       if(w != 0):
         line += " " + str(d) + ":" + str(w)
     line += "\t$"
-    print line
-  print ")"
+    print (line)
 
 if __name__ == "__main__":
   FT = read_faculty_topic_map()

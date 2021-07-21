@@ -7,7 +7,7 @@ import re
 
 pregap = re.compile(r'(?P<cap>[(/A-Z])')
 postgap = re.compile(r'(?P<punc>[,/])')
-base = "/home/sujit/IIITB/projects/rap/interview-panel/data/Pravesh-2019-1"
+base = "/home/keshav/Desktop/PE/P2-Interview/interview-panel/data/Pravesh-2019-1"
 collated = os.path.join(base, "collated")
 
 EXTRACT_KEYS = ['App Id', 'Email', 'FirstName', 'LastName', 'Program', 'Status', 'Mobile', 'Gender', 'DateofBirth',
@@ -90,7 +90,7 @@ workbook_mscdt = xlsxwriter.Workbook(os.path.join(collated, 'mscdt_applications.
 domains_msphd, domains_mscdt = dict(), dict()
 for root, dirs, files in os.walk(collated):
     for fname in files:
-        print "fname = " + root + '/' + fname
+        print ("fname = " + root + '/' + fname)
         if fname.endswith('_faculty.pdf') or fname.endswith('_candidate.pdf') or fname.endswith('_office.pdf'):
             fields = fname.split('_')
             if len(fields) > 2:

@@ -33,7 +33,7 @@ def get_nodes(g):
 def number_of_nodes(g):
   return len(get_nodes(g))
 
-def add_edge_to_edge_list(edge_list, (n, w)):
+def add_edge_to_edge_list(edge_list, n, w):
   for i in range(len(edge_list)):
     (n1, w1) = edge_list[i]
     if(n1 == n):
@@ -47,7 +47,7 @@ def add_edge(e, g):
   if(not n in g):
     g[n] = []
   edge_list = g[n]
-  add_edge_to_edge_list(edge_list, (E.get_end_node(e), E.get_weight(e)))
+  add_edge_to_edge_list(edge_list, E.get_end_node(e), E.get_weight(e))
   return g
 ## Graph - end
 # Adjacency List - end
