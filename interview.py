@@ -201,18 +201,20 @@ if __name__ == "__main__":
 
     contents={}
     graph_dict=make_panel_graph(contents)
+    print(graph_dict)
     # graph_dict is { 'candidate1@gmail.com': ['candidate3@gmail.com'], 
     #   'candidate2@gmail.com': [], 
     #   'candidate3@gmail.com': ['candidate1@gmail.com']}
 
-    slots, final_stack=find_key(graph_dict,len(graph_dict))
+    # slots, final_stack=find_key(graph_dict,len(graph_dict))
 
-    colour_slots=slot_allotment(slots,graph_dict, final_stack)
-    print("\nSlots alloted to each Interview-Panel:\n")
+    # colour_slots=slot_allotment(slots,graph_dict, final_stack)
+    # print(colour_slots)
+    # print("\nSlots alloted to each Interview-Panel:\n")
 
-    print_interview_slots(colour_slots, contents)
+    # print_interview_slots(colour_slots, contents)
 
-    print("\n\nMinimum number of slots for this dataset: "+str(slots))
+    # print("\n\nMinimum number of slots for this dataset: "+str(slots))
     
 
 
