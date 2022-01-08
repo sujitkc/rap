@@ -16,7 +16,7 @@ def read_contents(fileName):
   csvContents = csv.reader(ifile)
   trimmedContents = []
   for row in csvContents:
-    trimmedRow = [cell for cell in row if cell is not ""]
+    trimmedRow = [cell for cell in row if cell != ""]
     if(len(trimmedRow) != 0):
       trimmedContents.append(trimmedRow)
     else:
@@ -26,7 +26,7 @@ def read_contents(fileName):
 
 ##################################################################################
 def copy_applications():
-  base = "/home/sujit/IIITB/projects/rap/interview-panel/data"
+  base = "/home/keshav/Desktop/PE/P2-Interview/interview-panel/data"
   src  = base + "/Pravesh-2019-1"
   dest = base + "/all_applications"
 
@@ -79,7 +79,7 @@ def text_extractor(path):
 '''
 def pdf_to_text():
   ommitted_files = [ "421.pdf" ]
-  base = "/home/sujit/IIITB/projects/rap/interview-panel/data/all_applications"
+  base = "/home/keshav/Desktop/PE/P2-Interview/interview-panel/data/all_applications"
   files = os.listdir(base)
   for fname in files:
     if(fname in ommitted_files):
@@ -167,6 +167,7 @@ def map_emails_app_ids():
   base = "data/all_applications/"
   contents = read_contents("data/research-applications-may-2019.csv")
   email_ids = [row[1] for row in contents]
+  print(email_ids)
   files = [f for f in os.listdir(base) if f.endswith(".txt")]
   appid_emailid = {}
   for fname in files:
