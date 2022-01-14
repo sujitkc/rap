@@ -1,6 +1,3 @@
-# implementation based on the paper "Ant Colony System for Graph Coloring Problem", IJESC 2017, Volume 7 Issue No.7
-# http://ijesc.org/upload/c6c0941d337a1b5b634062a54bb33d5c.Ant%20Colony%20System%20for%20Graph%20Coloring%20Problem.pdf
-# author: brygida czech
 import networkx as nx
 import random
 import numpy as np
@@ -14,14 +11,13 @@ class Ant:
     # beta: the relative importance of heuristic value (n_ij)
     def __init__(self, alpha=1, beta=3):
         self.graph = None
-        self.colors = {}
+        # self.colors = {}
         self.start = None
         self.visited = []
         self.unvisited = []
         self.alpha = alpha
         self.beta = beta
         self.distance = 0 # number of used colors on a valid solution
-        self.number_colisions = 0 # only for consistency check, should be always 0
         self.colors_available = []
         self.colors_assigned = {}
 
@@ -74,12 +70,10 @@ class Ant:
                     break
         # save distance of the current solution
         self.distance = len(set(self.colors_assigned.values()))
-        # consitency check
-        ##self.number_colisions = self.colisions()
-        ##print('colisions: ' + str(self.number_colisions))
+
         
     # return the number of different colors among the neighbours of node
-    def dsat(self, node=None):
+    def dsat(self, node):
         if node is None:
             node = self.start
         col_neighbors = []
@@ -122,18 +116,6 @@ class Ant:
                 if (self.colors_assigned[i]==self.colors_assigned[j]):
                     phero_trail[i,j] = 1
         return phero_trail
-
-    # consistency check --> should always return 0
-    def colisions(self):
-        colisions = 0
-        for key in self.colors_assigned:
-            node = key
-            col = self.colors_assigned[key]
-            # check colors of neighbours
-            for j in range(number_nodes):
-                if (adj_matrix[node, j]==1 and self.colors_assigned[j]==col):
-                    colisions = colisions+1
-        return colisions
         
 # take input from the txt.file and create an undirected graph
 def create_graph(path):
@@ -150,20 +132,22 @@ def create_graph(path):
         g.add_edge(graph_edge_list[0], graph_edge_list[1])
     return g
 
-
-#draw the graph and display the weights on the edges
-def draw_graph(g, col_val):
-	pos = nx.spring_layout(g)
-	values = [col_val.get(node, 'blue') for node in g.nodes()]
-	nx.draw(g, pos, with_labels = True, node_color = values, edge_color = 'black' ,width = 1, alpha = 0.7)  #with_labels=true is to show the node number in the output graph
+#   0 1 2
+# 0 0 1
+# 1 1 0
+# 2  
 
 # initiate a selection of colors for the coloring and compute the min. number of colors needed for a proper coloring
 def init_colors(g):
     # grundy (max degree+1)
-    colors = []
-    grundy = len(nx.degree_histogram(g))
-    for c in range(grundy):
-       colors.append(c)
+    # colors = []
+    print(nx.degree_histogram(g))
+    # nx.degree_histogram is the list of frequencies of degrees of G
+    # [3, 4, 6, 3, 1]
+    initial_cols = len(nx.degree_histogram(g))
+    # for c in range(initial_cols):
+    #    colors.append(c)
+    colors = [c for c in range(initial_cols)]
     return colors
 
 # create a pheromone matrix with init pheromone values: 1 if nodes not adjacent, 0 if adjacent
@@ -216,14 +200,14 @@ def update_elite():
     return elite_ant.distance, elite_ant.colors_assigned
 
 
-# ------------- entry point -------------
+
 # param input_graph - a networkx graph to be colored (node coloring)
 # param num_ants - number of ants in the colony
 # param iter - number of iterations to be performed
 # param a - relative importance of elite pheromones
 # param b - relative importance of heuristic value (DSAT)
 # param decay - evaporation of pheromones after each iteration
-def solve(input_graph, num_ants=10, iter=10, a=1, b=3, decay=0.8):
+def solve(input_graph, num_ants=3, iter=1, a=1, b=3, decay=0.8):
     global g # graph to be colored (a networkx graph)
     global number_nodes
     global g_nodes_int
@@ -251,6 +235,7 @@ def solve(input_graph, num_ants=10, iter=10, a=1, b=3, decay=0.8):
     
     # init    
     number_nodes = nx.number_of_nodes(g)
+    # g_nodes_int is the list of nodes
     g_nodes_int = []
     for node in g.nodes():
         g_nodes_int.append(node)
@@ -259,10 +244,12 @@ def solve(input_graph, num_ants=10, iter=10, a=1, b=3, decay=0.8):
     colors = init_colors(g)
     phero_matrix = init_pheromones(g)
 
+    # print(colors)
+
     # ACO_GCP daemon
     for i in range(number_iterations):
         # create colony
-        ants = []
+        # ants = []
         ants = create_colony()
         # let colony find solutions
         for ant in ants:
@@ -309,4 +296,7 @@ if __name__ == "__main__":
     lookup_dict, output_dict = E.encode(graph_dict)
 
     graph = nx.from_dict_of_lists(output_dict)
+    # graph is the encoded graph 
+    # print(graph)
     print(solve(graph))
+    # init_colors(graph)

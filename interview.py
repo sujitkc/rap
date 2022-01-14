@@ -106,7 +106,9 @@ def slot_allotment(slots,graph, final_stack):
 
 
 def make_panel_graph(contents):
-    fileName = "data/output/panel/review-panels.csv"
+    # fileName = "data/output/new-paper/review-panels-2021-edgesorting.csv"
+    # fileName = "data/output/interview-panels-2021.csv"
+    fileName = "data/output/new-paper/interview-panels-that-samaksh-sent.csv"
     if (not os.path.isfile(fileName)):
         print(fileName + ": file does not exist.")
     data = open(fileName, "r")
@@ -201,20 +203,20 @@ if __name__ == "__main__":
 
     contents={}
     graph_dict=make_panel_graph(contents)
-    print(graph_dict)
+    # print(graph_dict)
     # graph_dict is { 'candidate1@gmail.com': ['candidate3@gmail.com'], 
     #   'candidate2@gmail.com': [], 
     #   'candidate3@gmail.com': ['candidate1@gmail.com']}
 
-    # slots, final_stack=find_key(graph_dict,len(graph_dict))
+    slots, final_stack=find_key(graph_dict,len(graph_dict))
 
-    # colour_slots=slot_allotment(slots,graph_dict, final_stack)
+    colour_slots=slot_allotment(slots,graph_dict, final_stack)
     # print(colour_slots)
-    # print("\nSlots alloted to each Interview-Panel:\n")
+    print("\nSlots alloted to each Interview-Panel:\n")
 
-    # print_interview_slots(colour_slots, contents)
+    print_interview_slots(colour_slots, contents)
 
-    # print("\n\nMinimum number of slots for this dataset: "+str(slots))
+    print("\n\nMinimum number of slots for this dataset: "+str(slots))
     
 
 

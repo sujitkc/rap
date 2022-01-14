@@ -253,7 +253,7 @@ def print_referral_to_file(f, apps):
 
 ##################################################################################
 def print_review_panels_to_file(review_panels):
-  fout = open("data/output/panel/review-panels.txt", "w")
+  fout = open("data/output/new-paper/review-panels-2021-edgesorting.txt", "w")
   count=0
   for app in review_panels:
     fout.write("\n***************************************************")
@@ -266,7 +266,7 @@ def print_review_panels_to_file(review_panels):
   fout.close()
 ##################################################################################
 def create_review_panels_to_file(review_panels):
-  fout = open("data/output/panel/review-panels.csv", "w")
+  fout = open("data/output/new-paper/review-panels-2021-edgesorting.csv", "w")
   count=0
   for app in review_panels:
     count+=1
@@ -310,9 +310,9 @@ panels.
 '''
 ##################################################################################
 if __name__ == "__main__":
-  faculty_topics = get_faculty_topics(read_contents("data/final-topics-21.csv"))
+  faculty_topics = get_faculty_topics(read_contents("data/output/new-paper/final-topics-21.csv"))
   # faculty_topics is a dictionary in the form of {prof_name: list_of_topics}
-  application_topics = get_application_topics(read_contents("data/final-research-applications-21.csv"))
+  application_topics = get_application_topics(read_contents("data/output/new-paper/final-research-applications-21.csv"))
   # application_topics is a dictionary in the form of {candidate_email: list_of_topics}
 
   # print(faculty_topics)
